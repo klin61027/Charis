@@ -1,1 +1,1 @@
-# AWS-Hakerhon-2026
+# AWS-Hackathon-2026
