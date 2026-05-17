@@ -8,7 +8,6 @@
       </div>
       <div class="top-divider"></div>
 
-      <!-- summary strip -->
       <div class="summary-strip">
         <div class="summary-card">
           <div class="summary-val">{{ summaryStats.active }}</div>
@@ -26,7 +25,6 @@
 
       <div class="top-divider"></div>
 
-      <!-- tab pills -->
       <div class="tab-row">
         <button
           class="pill"
@@ -45,10 +43,8 @@
       </div>
     </div>
 
-    <!-- scrollable content -->
     <div class="wallet-content">
 
-      <!-- coupons tab -->
       <template v-if="activeTab === 'coupons'">
         <div v-if="visibleCoupons.length === 0" class="empty-state">
           <IconTicket :size="32" class="empty-icon" aria-hidden="true" />
@@ -62,7 +58,6 @@
         />
       </template>
 
-      <!-- tickets tab -->
       <template v-else-if="activeTab === 'tickets'">
         <div v-if="visibleTickets.length === 0" class="empty-state">
           <IconCalendarOff :size="32" class="empty-icon" aria-hidden="true" />
@@ -72,12 +67,12 @@
           v-for="ticket in visibleTickets"
           :key="ticket.id"
           :ticket="ticket"
+          @show-qr="openQr"
         />
       </template>
 
     </div>
 
-    <!-- bottom nav -->
     <nav class="bottom-nav" aria-label="Main navigation">
       <router-link to="/" class="nav-item">
         <IconHome :size="20" aria-hidden="true" />
@@ -93,10 +88,16 @@
       </router-link>
     </nav>
 
+    <TicketQrModal
+      :ticket="activeQrTicket"
+      @close="closeQr"
+    />
+
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import {
   IconTicket,
   IconCalendarOff,
@@ -107,6 +108,8 @@ import {
 import { useWallet } from '../../viewmodels/useWallet'
 import CouponCard from '../../components/wallet/CouponCard.vue'
 import TicketCard from '../../components/wallet/TicketCard.vue'
+import TicketQrModal from '../../components/wallet/TicketQrModal.vue'
+import type { Ticket } from '../../models/types/ticket.types'
 
 const {
   activeTab,
@@ -116,6 +119,16 @@ const {
   setTab,
   useCoupon,
 } = useWallet()
+
+const activeQrTicket = ref<Ticket | null>(null)
+
+function openQr(ticket: Ticket) {
+  activeQrTicket.value = ticket
+}
+
+function closeQr() {
+  activeQrTicket.value = null
+}
 </script>
 
 <style scoped>
@@ -139,9 +152,7 @@ const {
   padding: 0 20px;
 }
 
-.wallet-header {
-  padding: 16px 0 14px;
-}
+.wallet-header { padding: 16px 0 14px; }
 
 .wallet-title {
   font-size: 20px;

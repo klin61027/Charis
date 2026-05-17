@@ -10,4 +10,5 @@ export interface Ticket {
   time: string
   location: string
   status: TicketStatus
+  qrCode: string
 }

@@ -11,6 +11,7 @@ export const mockTickets: Ticket[] = [
     time: '9:00am',
     location: 'SoDo, Seattle',
     status: 'upcoming',
+    qrCode: 'TKT-EVT1-U1-2024',
   },
   {
     id: 'tkt-2',
@@ -22,6 +23,7 @@ export const mockTickets: Ticket[] = [
     time: '10:00am',
     location: 'Capitol Hill, Seattle',
     status: 'upcoming',
+    qrCode: 'TKT-EVT2-U1-2024',
   },
   {
     id: 'tkt-3',
@@ -33,6 +35,7 @@ export const mockTickets: Ticket[] = [
     time: '9:00am',
     location: 'Rainier Valley, Seattle',
     status: 'attended',
+    qrCode: 'TKT-EVTP1-U1-2024',
   },
   {
     id: 'tkt-4',
@@ -44,5 +47,6 @@ export const mockTickets: Ticket[] = [
     time: '8:00am',
     location: 'Green Lake, Seattle',
     status: 'attended',
+    qrCode: 'TKT-EVTP2-U1-2024',
   },
 ]
