@@ -5,6 +5,8 @@ import SignUpView from '../views/auth/SignUpView.vue'
 import OrgSignUpView from '../views/auth/OrgSignUpView.vue'
 import HomeView from '../views/home/HomeView.vue'
 import WalletView from '../views/wallet/WalletView.vue'
+import ProfileView from '../views/profile/ProfileView.vue'
+import SettingsView from '../views/settings/SettingsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -29,8 +31,14 @@ const router = createRouter({
       component: () => import('../components/layout/AppShell.vue'),
       meta: { requiresAuth: true, role: 'user' },
       children: [
-        { path: '', component: HomeView },
-        { path: 'wallet', component: WalletView },
+        { path: '',                component: HomeView     },
+        { path: 'wallet',          component: WalletView   },
+        { path: 'profile',         component: ProfileView  },
+        { path: 'settings',        component: SettingsView },
+        { path: 'explore', component: () => import('../views/explore/ExploreView.vue') },
+        { path: 'events/:id',      component: HomeView     },
+        { path: 'org/:id', component: () => import('../views/org/OrgDetailView.vue') },
+        { path: 'notifications',   component: HomeView     },
       ],
     },
     {

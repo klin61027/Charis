@@ -1,6 +1,5 @@
 <template>
   <div class="event-card" :class="{ 'past-card': event.past }">
-
     <div class="event-thumb" :style="thumbStyle">
       <component
         :is="categoryIcon"
@@ -9,7 +8,6 @@
         aria-hidden="true"
       />
     </div>
-
     <div class="event-content">
       <div class="event-title">{{ event.title }}</div>
       <div class="event-meta">
@@ -20,44 +18,34 @@
         <IconMapPin :size="12" aria-hidden="true" />
         {{ event.location }}
       </div>
-      <div class="event-footer">
-
-        <!-- past state -->
-        <template v-if="event.past">
-          <span class="attendee-text">
-            {{ event.attendeeCount }}/{{ event.attendeeMax }} attended
-          </span>
+      <template v-if="event.past">
+        <div class="event-footer">
+          <span class="attendee-text">{{ event.attendeeCount }}/{{ event.attendeeMax }} attended</span>
           <span class="attended-badge">Attended</span>
-        </template>
-
-        <!-- active state -->
-        <template v-else>
+        </div>
+      </template>
+      <template v-else>
+        <div v-if="event.reward" class="reward-tag">
+          <IconTicket :size="11" aria-hidden="true" />
+          <span>Earn: {{ event.reward.value }} · {{ event.reward.businessName }}</span>
+        </div>
+        <div class="event-footer">
           <div class="attendees">
             <div class="avatar-stack">
-              <div
-                v-for="(att, i) in event.attendees"
-                :key="i"
-                class="av"
-              >
-                {{ att.initial }}
-              </div>
+              <div v-for="(att, i) in event.attendees" :key="i" class="av">{{ att.initial }}</div>
             </div>
-            <span class="attendee-text">
-              {{ event.attendeeCount }}/{{ event.attendeeMax }}
-            </span>
+            <span class="attendee-text">{{ event.attendeeCount }}/{{ event.attendeeMax }}</span>
           </div>
           <button
             class="action-btn"
             :class="{ joined: isJoined }"
-            @click.stop="$emit('join', event.id)"
+            @click.stop="handleJoin"
           >
             {{ isJoined ? 'Joined' : 'Join' }}
           </button>
-        </template>
-
-      </div>
+        </div>
+      </template>
     </div>
-
   </div>
 </template>
 
@@ -66,6 +54,7 @@ import { computed } from 'vue'
 import {
   IconCalendar,
   IconMapPin,
+  IconTicket,
   IconHeartHandshake,
   IconTrees,
   IconCoin,
@@ -74,12 +63,13 @@ import {
 import type { Event, EventCategory } from '../../models/types/event.types'
 
 const props = defineProps<{
-  event: Event
+  event:    Event
   isJoined?: boolean
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'join', id: string): void
+  (e: 'open-form', event: Event): void
 }>()
 
 const categoryStyles: Record<EventCategory, { color: string; bg: string }> = {
@@ -96,13 +86,19 @@ const categoryIcons: Record<EventCategory, unknown> = {
   workshop:   IconSchool,
 }
 
-const style = computed(() => categoryStyles[props.event.category])
-
+const style        = computed(() => categoryStyles[props.event.category])
 const categoryIcon = computed(() => categoryIcons[props.event.category])
-
-const thumbStyle = computed(() => ({
+const thumbStyle   = computed(() => ({
   background: `linear-gradient(135deg, ${style.value.bg} 0%, #f0ede8 100%)`,
 }))
+
+function handleJoin() {
+  if (props.isJoined) {
+    emit('join', props.event.id)
+  } else {
+    emit('open-form', props.event)
+  }
+}
 </script>
 
 <style scoped>
@@ -116,23 +112,16 @@ const thumbStyle = computed(() => ({
 }
 .event-card:last-child { border-bottom: none; }
 .past-card { opacity: 0.65; }
-
 .event-thumb {
   width: 100px;
   height: 80px;
   border-radius: var(--r-sm);
-  overflow: hidden;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-
-.event-content {
-  flex: 1;
-  min-width: 0;
-}
-
+.event-content { flex: 1; min-width: 0; }
 .event-title {
   font-size: 14px;
   font-weight: 500;
@@ -140,7 +129,6 @@ const thumbStyle = computed(() => ({
   line-height: 1.3;
   margin-bottom: 4px;
 }
-
 .event-meta {
   font-size: 12px;
   color: #6b6b72;
@@ -149,7 +137,20 @@ const thumbStyle = computed(() => ({
   align-items: center;
   gap: 5px;
 }
-
+.reward-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #c9920e18;
+  border: 0.5px solid #c9920e44;
+  border-radius: var(--r-pill);
+  padding: 3px 10px;
+  margin-top: 5px;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #c9920e;
+}
 .event-footer {
   display: flex;
   align-items: center;
@@ -157,15 +158,8 @@ const thumbStyle = computed(() => ({
   margin-top: 6px;
   gap: 8px;
 }
-
-.attendees {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
+.attendees { display: flex; align-items: center; gap: 6px; }
 .avatar-stack { display: flex; }
-
 .av {
   width: 22px;
   height: 22px;
@@ -180,13 +174,7 @@ const thumbStyle = computed(() => ({
   color: #6b6b72;
 }
 .av + .av { margin-left: -8px; }
-
-.attendee-text {
-  font-size: 11px;
-  color: #a0a0a8;
-  margin-left: 4px;
-}
-
+.attendee-text { font-size: 11px; color: #a0a0a8; margin-left: 4px; }
 .action-btn {
   padding: 6px 14px;
   border-radius: var(--r-sm);
@@ -205,7 +193,6 @@ const thumbStyle = computed(() => ({
   color: var(--ch-gold);
   border-color: var(--ch-gold);
 }
-
 .attended-badge {
   display: inline-block;
   padding: 4px 12px;
