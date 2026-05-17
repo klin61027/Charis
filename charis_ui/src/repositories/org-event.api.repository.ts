@@ -14,8 +14,8 @@ const BASE_URL = 'http://127.0.0.1:5000'
 
 function deriveEventStatus(startTime: string, endTime: string): OrgEventStatus {
   const now   = new Date()
-  const start = new Date(startTime)
-  const end   = new Date(endTime)
+  const start = new Date(startTime + 'Z')
+  const end   = new Date(endTime + 'Z')
   if (now >= start && now <= end) return 'live'
   if (now < start)               return 'upcoming'
   return 'past'
