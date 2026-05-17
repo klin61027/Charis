@@ -17,8 +17,8 @@
 
           <div class="qr-wrap">
             <img
-              src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=PLACEHOLDER"
-              alt="Ticket QR code placeholder"
+              :src="`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(ticket.qrCode)}`"
+              alt="Ticket QR code"
               class="qr-img"
               width="180"
               height="180"

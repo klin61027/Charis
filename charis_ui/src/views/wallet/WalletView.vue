@@ -97,7 +97,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import {
   IconTicket,
   IconCalendarOff,
@@ -106,6 +106,7 @@ import {
   IconWallet,
 } from '@tabler/icons-vue'
 import { useWallet } from '../../viewmodels/useWallet'
+import { useAuthStore } from '../../stores/auth.store'
 import CouponCard from '../../components/wallet/CouponCard.vue'
 import TicketCard from '../../components/wallet/TicketCard.vue'
 import TicketQrModal from '../../components/wallet/TicketQrModal.vue'
@@ -118,7 +119,16 @@ const {
   summaryStats,
   setTab,
   useCoupon,
+  loadTickets,
 } = useWallet()
+
+const auth = useAuthStore()
+
+onMounted(() => {
+  if (auth.user?.id) {
+    loadTickets(auth.user.id)
+  }
+})
 
 const activeQrTicket = ref<Ticket | null>(null)
 

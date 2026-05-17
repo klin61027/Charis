@@ -32,6 +32,34 @@ def _create_coupon(cur, ticket_id, restaurant_id, vegetarian, data):
     return cur.fetchone()[0]
 
 
+@tickets_bp.route("/users/<user_id>/tickets", methods=["GET"])
+def list_user_tickets(user_id):
+    conn = get_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute(
+        """
+        SELECT t.id, t.user_id, t.events_id, t.job_type, t.status,
+               t.get_rewards, t.qr_code, t.created_at,
+               e.title      AS event_title,
+               e.address    AS event_address,
+               e.city       AS event_city,
+               e.start_time AS event_start_time,
+               e.end_time   AS event_end_time,
+               o.name       AS organization_name
+        FROM public.tickets t
+        JOIN public.events e      ON e.id = t.events_id
+        LEFT JOIN public.organization o ON o.id = e.organization_id
+        WHERE t.user_id = %s
+        ORDER BY t.created_at DESC
+        """,
+        (user_id,),
+    )
+    rows = [serialize_row(r) for r in cur.fetchall()]
+    cur.close()
+    conn.close()
+    return jsonify(rows)
+
+
 @tickets_bp.route("/tickets", methods=["GET"])
 def list_tickets():
     conn = get_connection()
