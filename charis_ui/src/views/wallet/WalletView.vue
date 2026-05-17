@@ -54,7 +54,7 @@
           v-for="coupon in visibleCoupons"
           :key="coupon.id"
           :coupon="coupon"
-          @use="useCoupon"
+          @use="openBarcode"
         />
       </template>
 
@@ -88,6 +88,12 @@
       </router-link>
     </nav>
 
+    <CouponBarcodeModal
+      :coupon="activeCoupon"
+      @close="activeCoupon = null"
+      @confirm="confirmUseCoupon"
+    />
+
     <TicketQrModal
       :ticket="activeQrTicket"
       @close="closeQr"
@@ -108,9 +114,11 @@ import {
 import { useWallet } from '../../viewmodels/useWallet'
 import { useAuthStore } from '../../stores/auth.store'
 import CouponCard from '../../components/wallet/CouponCard.vue'
+import CouponBarcodeModal from '../../components/wallet/CouponBarcodeModal.vue'
 import TicketCard from '../../components/wallet/TicketCard.vue'
 import TicketQrModal from '../../components/wallet/TicketQrModal.vue'
 import type { Ticket } from '../../models/types/ticket.types'
+import type { Coupon } from '../../models/types/coupon.types'
 
 const {
   activeTab,
@@ -129,6 +137,21 @@ onMounted(() => {
     loadTickets(auth.user.id)
   }
 })
+
+// ─── Coupon barcode modal ─────────────────────────────────────────────────────
+
+const activeCoupon = ref<Coupon | null>(null)
+
+function openBarcode(id: string) {
+  activeCoupon.value = visibleCoupons.value.find(c => c.id === id) ?? null
+}
+
+function confirmUseCoupon(id: string) {
+  useCoupon(id)
+  activeCoupon.value = null
+}
+
+// ─── Ticket QR modal ──────────────────────────────────────────────────────────
 
 const activeQrTicket = ref<Ticket | null>(null)
 

@@ -1,20 +1,21 @@
 import { ref, computed } from 'vue'
-import { mockCoupons } from '../data/coupons'
-import { getTicketsByUser } from '../repositories/ticket.api.repository'
+import { getTicketsByUser, getCouponsByUser } from '../repositories/ticket.api.repository'
 import type { Ticket } from '../models/types/ticket.types'
+import type { Coupon } from '../models/types/coupon.types'
 
 export type WalletTab = 'coupons' | 'tickets'
 
 export function useWallet() {
   const activeTab = ref<WalletTab>('coupons')
   const tickets   = ref<Ticket[]>([])
+  const coupons   = ref<Coupon[]>([])
 
-  const activeCoupons   = computed(() => mockCoupons.filter(c => c.status === 'active'))
-  const expiringCoupons = computed(() => mockCoupons.filter(c => c.status === 'expiring_soon'))
-  const usedCoupons     = computed(() => mockCoupons.filter(c => c.status === 'redeemed'))
+  const activeCoupons   = computed(() => coupons.value.filter(c => c.status === 'active'))
+  const expiringCoupons = computed(() => coupons.value.filter(c => c.status === 'expiring_soon'))
+  const usedCoupons     = computed(() => coupons.value.filter(c => c.status === 'redeemed'))
 
   const visibleCoupons = computed(() =>
-    mockCoupons.filter(c => c.status === 'active' || c.status === 'expiring_soon')
+    coupons.value.filter(c => c.status === 'active' || c.status === 'expiring_soon')
   )
 
   const upcomingTickets = computed(() => tickets.value.filter(t => t.status === 'upcoming'))
@@ -33,12 +34,17 @@ export function useWallet() {
   }
 
   function useCoupon(id: string) {
-    const coupon = mockCoupons.find(c => c.id === id)
+    const coupon = coupons.value.find(c => c.id === id)
     if (coupon) coupon.status = 'redeemed'
   }
 
   async function loadTickets(userId: string) {
-    tickets.value = await getTicketsByUser(userId)
+    const [fetchedTickets, fetchedCoupons] = await Promise.all([
+      getTicketsByUser(userId),
+      getCouponsByUser(userId),
+    ])
+    tickets.value = fetchedTickets
+    coupons.value = fetchedCoupons
   }
 
   return {
