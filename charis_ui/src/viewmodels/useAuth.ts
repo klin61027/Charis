@@ -3,9 +3,11 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth.store'
 import type { UserRole, AuthProvider } from '../models/types/user.types'
 
+const DEMO_ORG_ID   = '72b6f4a3-2132-4e9f-9fed-ebc201dec508'
+const DEMO_ORG_NAME = 'Seattle Volunteer Hub 45'
+
 async function mockLogin(provider: AuthProvider | 'email', role: UserRole) {
   await new Promise(r => setTimeout(r, 700))
-
   if (role === 'user') {
     return {
       role,
@@ -21,18 +23,17 @@ async function mockLogin(provider: AuthProvider | 'email', role: UserRole) {
       },
     }
   }
-
   return {
     role,
     provider: (provider === 'email' ? 'google' : provider) as AuthProvider,
     token: 'mock-org-token',
     org: {
-      id: 'o1',
-      name: 'Seattle Green Collective',
-      logo: null,
-      description: 'Community environmental action in Seattle.',
-      followersCount: 1200,
-      eventsCount: 8,
+      id:             DEMO_ORG_ID,
+      name:           DEMO_ORG_NAME,
+      logo:           null,
+      description:    'Community volunteer events in Seattle.',
+      followersCount: 0,
+      eventsCount:    4,
     },
   }
 }
@@ -87,9 +88,60 @@ export function useAuth() {
     }
   }
 
+  async function demoOrgLogin() {
+    isLoading.value = true
+    error.value     = null
+    try {
+      authStore.setSession({
+        role:     'org',
+        provider: 'google',
+        token:    'demo-org-token',
+        org: {
+          id:             DEMO_ORG_ID,
+          name:           DEMO_ORG_NAME,
+          logo:           null,
+          description:    'Community volunteer events in Seattle.',
+          followersCount: 0,
+          eventsCount:    4,
+        },
+      })
+      router.push('/org/dashboard')
+    } catch {
+      error.value = 'Demo login failed.'
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function demoUserLogin() {
+    isLoading.value = true
+    error.value     = null
+    try {
+      authStore.setSession({
+        role:     'user',
+        provider: 'google',
+        token:    'demo-user-token',
+        user: {
+          id:       'u1',
+          name:     'Kevin Lin',
+          username: 'kevinlin',
+          email:    'kevin@example.com',
+          avatar:   null,
+          bio:      'Applied Math + Data Science. Building for good.',
+        },
+      })
+      router.push('/')
+    } catch {
+      error.value = 'Demo login failed.'
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     role, email, password, showPassword,
     isLoading, error, isOrgRole,
     setRole, submitEmail, loginWithProvider,
+    demoOrgLogin, demoUserLogin,
   }
 }

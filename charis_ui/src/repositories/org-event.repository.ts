@@ -1,3 +1,4 @@
+import type { IOrgEventRepository } from '../repositories/org-event.repository'
 import type {
   OrgEvent,
   OrgVolunteer,
@@ -5,52 +6,69 @@ import type {
   OrgDashboardStats,
   OrgEventStatus,
   ApprovalStatus,
-} from '../../models/types/org-event.types'
+} from '../models/types/org-event.types'
+import { OrgEventApiRepository } from '../repositories/org-event.api.repository'
 
-export interface IOrgEventRepository {
+// ─── Factory ──────────────────────────────────────────────────────────────────
+// To switch back to mock:
+//   import { OrgEventMockRepository } from '../repositories/org-event.mock.repository'
+//   return new OrgEventMockRepository()
 
-  // ─── Events ───────────────────────────────────────────────────────────────
+function getRepository(): IOrgEventRepository {
+  return new OrgEventApiRepository()
+}
 
-  getEvents(organizationId: string): Promise<OrgEvent[]>
+const repo = getRepository()
 
-  getEventById(eventId: string): Promise<OrgEvent | null>
+// ─── Service ──────────────────────────────────────────────────────────────────
 
-  getEventsByStatus(
-    organizationId: string,
-    status: OrgEventStatus
-  ): Promise<OrgEvent[]>
+export const orgEventService = {
 
-  // ─── Volunteers / Approvals ───────────────────────────────────────────────
+  getEvents(organizationId: string): Promise<OrgEvent[]> {
+    return repo.getEvents(organizationId)
+  },
 
-  getVolunteers(organizationId: string): Promise<OrgVolunteer[]>
+  getEventById(eventId: string): Promise<OrgEvent | null> {
+    return repo.getEventById(eventId)
+  },
 
-  getVolunteersByEvent(eventId: string): Promise<OrgVolunteer[]>
+  getEventsByStatus(organizationId: string, status: OrgEventStatus): Promise<OrgEvent[]> {
+    return repo.getEventsByStatus(organizationId, status)
+  },
 
-  updateApprovalStatus(
-    volunteerId: string,
-    status: ApprovalStatus
-  ): Promise<OrgVolunteer>
+  getVolunteers(organizationId: string): Promise<OrgVolunteer[]> {
+    return repo.getVolunteers(organizationId)
+  },
 
-  approveAll(eventId: string): Promise<OrgVolunteer[]>
+  getVolunteersByEvent(eventId: string): Promise<OrgVolunteer[]> {
+    return repo.getVolunteersByEvent(eventId)
+  },
 
-  // ─── Check-in ─────────────────────────────────────────────────────────────
+  updateApprovalStatus(volunteerId: string, status: ApprovalStatus): Promise<OrgVolunteer> {
+    return repo.updateApprovalStatus(volunteerId, status)
+  },
 
-  checkInVolunteer(
-    volunteerId: string,
-    method: 'qr' | 'manual'
-  ): Promise<OrgVolunteer>
+  approveAll(eventId: string): Promise<OrgVolunteer[]> {
+    return repo.approveAll(eventId)
+  },
 
-  // ─── Rewards ──────────────────────────────────────────────────────────────
+  checkInVolunteer(volunteerId: string, method: 'qr' | 'manual'): Promise<OrgVolunteer> {
+    return repo.checkInVolunteer(volunteerId, method)
+  },
 
-  issueReward(volunteerId: string): Promise<OrgVolunteer>
+  issueReward(volunteerId: string): Promise<OrgVolunteer> {
+    return repo.issueReward(volunteerId)
+  },
 
-  issueAllRewards(eventId: string): Promise<OrgVolunteer[]>
+  issueAllRewards(eventId: string): Promise<OrgVolunteer[]> {
+    return repo.issueAllRewards(eventId)
+  },
 
-  // ─── Vendor deals ─────────────────────────────────────────────────────────
+  getVendorDeals(organizationId: string): Promise<VendorDeal[]> {
+    return repo.getVendorDeals(organizationId)
+  },
 
-  getVendorDeals(organizationId: string): Promise<VendorDeal[]>
-
-  // ─── Dashboard ────────────────────────────────────────────────────────────
-
-  getDashboardStats(organizationId: string): Promise<OrgDashboardStats>
+  getDashboardStats(organizationId: string): Promise<OrgDashboardStats> {
+    return repo.getDashboardStats(organizationId)
+  },
 }

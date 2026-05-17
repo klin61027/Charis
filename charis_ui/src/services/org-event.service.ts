@@ -7,15 +7,15 @@ import type {
   OrgEventStatus,
   ApprovalStatus,
 } from '../models/types/org-event.types'
-import { OrgEventMockRepository } from '../repositories/org-event.mock.repository'
+import { OrgEventApiRepository } from '../repositories/org-event.api.repository'
 
 // ─── Factory ──────────────────────────────────────────────────────────────────
-// Swap this one line when the real API repository is ready:
-//   import { OrgEventApiRepository } from '../repositories/org-event.api.repository'
-//   return new OrgEventApiRepository()
+// To switch back to mock:
+//   import { OrgEventMockRepository } from '../repositories/org-event.mock.repository'
+//   return new OrgEventMockRepository()
 
 function getRepository(): IOrgEventRepository {
-  return new OrgEventMockRepository()
+  return new OrgEventApiRepository()
 }
 
 const repo = getRepository()
@@ -24,7 +24,6 @@ const repo = getRepository()
 
 export const orgEventService = {
 
-  // Events
   getEvents(organizationId: string): Promise<OrgEvent[]> {
     return repo.getEvents(organizationId)
   },
@@ -37,7 +36,6 @@ export const orgEventService = {
     return repo.getEventsByStatus(organizationId, status)
   },
 
-  // Volunteers / Approvals
   getVolunteers(organizationId: string): Promise<OrgVolunteer[]> {
     return repo.getVolunteers(organizationId)
   },
@@ -54,12 +52,10 @@ export const orgEventService = {
     return repo.approveAll(eventId)
   },
 
-  // Check-in
   checkInVolunteer(volunteerId: string, method: 'qr' | 'manual'): Promise<OrgVolunteer> {
     return repo.checkInVolunteer(volunteerId, method)
   },
 
-  // Rewards
   issueReward(volunteerId: string): Promise<OrgVolunteer> {
     return repo.issueReward(volunteerId)
   },
@@ -68,12 +64,10 @@ export const orgEventService = {
     return repo.issueAllRewards(eventId)
   },
 
-  // Vendor deals
   getVendorDeals(organizationId: string): Promise<VendorDeal[]> {
     return repo.getVendorDeals(organizationId)
   },
 
-  // Dashboard
   getDashboardStats(organizationId: string): Promise<OrgDashboardStats> {
     return repo.getDashboardStats(organizationId)
   },

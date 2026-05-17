@@ -19,6 +19,32 @@
           </div>
         </Transition>
 
+        <!-- Demo buttons -->
+        <div class="demo-row">
+          <button
+            class="demo-btn org"
+            :disabled="isLoading"
+            @click="demoOrgLogin"
+          >
+            <IconBuildingCommunity :size="14" aria-hidden="true" />
+            Demo: Org login
+          </button>
+          <button
+            class="demo-btn vol"
+            :disabled="isLoading"
+            @click="demoUserLogin"
+          >
+            <IconHeartHandshake :size="14" aria-hidden="true" />
+            Demo: Volunteer login
+          </button>
+        </div>
+
+        <div class="divider-row">
+          <span class="div-line"></span>
+          <span class="div-txt">or sign in manually</span>
+          <span class="div-line"></span>
+        </div>
+
         <!-- Form -->
         <form @submit.prevent="submitEmail" novalidate>
 
@@ -141,7 +167,14 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { IconInfoCircle, IconLock, IconEye, IconBrandApple } from '@tabler/icons-vue'
+import {
+  IconInfoCircle,
+  IconLock,
+  IconEye,
+  IconBrandApple,
+  IconBuildingCommunity,
+  IconHeartHandshake,
+} from '@tabler/icons-vue'
 import RoleToggle from '../../components/common/RoleToggle.vue'
 import CharisLogo from '../../components/common/CharisLogo.vue'
 import { useAuth } from '../../viewmodels/useAuth'
@@ -150,6 +183,7 @@ const {
   role, email, password, showPassword,
   isLoading, error, isOrgRole,
   setRole, submitEmail, loginWithProvider,
+  demoOrgLogin, demoUserLogin,
 } = useAuth()
 
 const accentStyle = computed(() => ({
@@ -176,6 +210,50 @@ const btnStyle = computed(() => ({
 }
 .banner-enter-from, .banner-leave-to  { max-height: 0; opacity: 0; margin-bottom: 0; }
 .banner-enter-to,   .banner-leave-from { max-height: 80px; opacity: 1; margin-bottom: 20px; }
+
+/* ─── Demo buttons ─────────────────────────────────────────────────────────── */
+
+.demo-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.demo-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--font-main);
+  transition: opacity 0.15s;
+  border: none;
+}
+.demo-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.demo-btn.org {
+  background: #2563eb12;
+  color: #2563eb;
+  border: 0.5px solid #2563eb44;
+}
+.demo-btn.org:hover { background: #2563eb20; }
+.demo-btn.vol {
+  background: #c9920e12;
+  color: #c9920e;
+  border: 0.5px solid #c9920e44;
+}
+.demo-btn.vol:hover { background: #c9920e20; }
+
+.divider-row {
+  display: flex; align-items: center;
+  gap: 12px; margin-bottom: 20px;
+}
+
+/* ─── Fields ───────────────────────────────────────────────────────────────── */
 
 .field { margin-bottom: 16px; }
 .field label {
@@ -236,23 +314,19 @@ const btnStyle = computed(() => ({
 .div-line { flex: 1; height: 0.5px; background: #e2e0d8; }
 .div-txt { font-size: 12px; color: #a0a0a8; white-space: nowrap; }
 
-.social-row { display: flex; gap: 10px; }
-.btn-google {
-  flex: 1; padding: 11px; border-radius: 10px;
-  border: 0.5px solid #dadce0; background: #fff; color: #3c4043;
-  font-size: 12px; font-weight: 500; font-family: var(--font-main);
-  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-.btn-apple {
-  flex: 1; padding: 11px; border-radius: 10px;
-  border: 0.5px solid #1a1a1a; background: #1a1a1a; color: #fff;
-  font-size: 12px; font-weight: 500; font-family: var(--font-main);
-  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-.btn-google:disabled, .btn-apple:disabled { opacity: 0.6; cursor: not-allowed; }
+.social-row { display: flex; gap: 10px; margin-bottom: 20px; }
 
-.footer-text { text-align: center; margin-top: 22px; font-size: 13px; color: #a0a0a8; }
+.btn-google, .btn-apple {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: 8px; padding: 12px; border-radius: 12px;
+  border: 0.5px solid #e2e0d8; background: #fff;
+  font-size: 14px; font-weight: 500; font-family: var(--font-main);
+  cursor: pointer; transition: background 0.15s;
+}
+.btn-google:hover, .btn-apple:hover { background: #f8f7f5; }
+
+.footer-text { font-size: 12px; color: #a0a0a8; text-align: center; }
 .footer-link { font-weight: 500; text-decoration: none; }
-.footer-link.vol { color: #b8860b; }
 .footer-link.org { color: #2563eb; }
+.footer-link.vol { color: #c9920e; }
 </style>
