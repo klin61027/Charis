@@ -6,6 +6,10 @@ import type { UserRole, AuthProvider } from '../models/types/user.types'
 const DEMO_ORG_ID   = '72b6f4a3-2132-4e9f-9fed-ebc201dec508'
 const DEMO_ORG_NAME = 'Seattle Volunteer Hub 45'
 
+const DEMO_USER_ID    = 'a331beb7-891a-411d-8ba3-9f5c6cedaa19'
+const DEMO_USER_NAME  = 'user_001'
+const DEMO_USER_EMAIL = 'user_001@example.com'
+
 async function mockLogin(provider: AuthProvider | 'email', role: UserRole) {
   await new Promise(r => setTimeout(r, 700))
   if (role === 'user') {
@@ -14,12 +18,12 @@ async function mockLogin(provider: AuthProvider | 'email', role: UserRole) {
       provider: (provider === 'email' ? 'google' : provider) as AuthProvider,
       token: 'mock-user-token',
       user: {
-        id: 'u1',
-        name: 'Kevin Lin',
-        username: 'kevinlin',
-        email: 'kevin@example.com',
-        avatar: null,
-        bio: 'Applied Math + Data Science. Building for good.',
+        id:       DEMO_USER_ID,
+        name:     DEMO_USER_NAME,
+        username: 'user001',
+        email:    DEMO_USER_EMAIL,
+        avatar:   null,
+        bio:      'Demo volunteer user.',
       },
     }
   }
@@ -122,12 +126,12 @@ export function useAuth() {
         provider: 'google',
         token:    'demo-user-token',
         user: {
-          id:       'u1',
-          name:     'Kevin Lin',
-          username: 'kevinlin',
-          email:    'kevin@example.com',
+          id:       DEMO_USER_ID,
+          name:     DEMO_USER_NAME,
+          username: 'user001',
+          email:    DEMO_USER_EMAIL,
           avatar:   null,
-          bio:      'Applied Math + Data Science. Building for good.',
+          bio:      'Demo volunteer user.',
         },
       })
       router.push('/')

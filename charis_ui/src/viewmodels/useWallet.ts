@@ -1,11 +1,13 @@
 import { ref, computed } from 'vue'
 import { mockCoupons } from '../data/coupons'
-import { mockTickets } from '../data/tickets'
+import { getTicketsByUser } from '../repositories/ticket.api.repository'
+import type { Ticket } from '../models/types/ticket.types'
 
 export type WalletTab = 'coupons' | 'tickets'
 
 export function useWallet() {
   const activeTab = ref<WalletTab>('coupons')
+  const tickets   = ref<Ticket[]>([])
 
   const activeCoupons   = computed(() => mockCoupons.filter(c => c.status === 'active'))
   const expiringCoupons = computed(() => mockCoupons.filter(c => c.status === 'expiring_soon'))
@@ -15,10 +17,10 @@ export function useWallet() {
     mockCoupons.filter(c => c.status === 'active' || c.status === 'expiring_soon')
   )
 
-  const upcomingTickets = computed(() => mockTickets.filter(t => t.status === 'upcoming'))
-  const attendedTickets = computed(() => mockTickets.filter(t => t.status === 'attended'))
+  const upcomingTickets = computed(() => tickets.value.filter(t => t.status === 'upcoming'))
+  const attendedTickets = computed(() => tickets.value.filter(t => t.status === 'attended'))
 
-  const visibleTickets = computed(() => mockTickets)
+  const visibleTickets = computed(() => tickets.value)
 
   const summaryStats = computed(() => ({
     active:   activeCoupons.value.length + upcomingTickets.value.length,
@@ -35,6 +37,10 @@ export function useWallet() {
     if (coupon) coupon.status = 'redeemed'
   }
 
+  async function loadTickets(userId: string) {
+    tickets.value = await getTicketsByUser(userId)
+  }
+
   return {
     activeTab,
     visibleCoupons,
@@ -42,5 +48,6 @@ export function useWallet() {
     summaryStats,
     setTab,
     useCoupon,
+    loadTickets,
   }
 }
