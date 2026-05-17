@@ -1,0 +1,38 @@
+@import './tokens.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-main);
+  font-size: 14px;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}
+
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f7f5;
+  padding: 24px 16px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: var(--r-md);
+  border: 0.5px solid #e2e0d8;
+  overflow: hidden;
+}
+
+.accent-bar {
+  height: 4px;
+  background: linear-gradient(90deg, var(--ch-gold) 0%, var(--ch-blue-mid) 100%);
+}
