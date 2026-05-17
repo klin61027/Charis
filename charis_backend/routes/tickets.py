@@ -7,22 +7,18 @@ from utils import serialize_row
 tickets_bp = Blueprint("tickets", __name__)
 
 
-def _create_coupon(cur, ticket_id, restaurant_id, vegetarian, data):
+def _create_coupon(cur, ticket_id, restaurant_id, data):
     barcode = secrets.token_hex(8).upper()
     cur.execute(
         """
         INSERT INTO public.coupons
-            (ticket_id, restaurant_id, title, description, vegetarian,
-             discount_price, status, barcode, start_time, end_time)
-        VALUES (%s,%s,%s,%s,%s,%s,'unused',%s,%s,%s)
+            (ticket_id, restaurant_id, discount_price, status, barcode, start_time, end_time)
+        VALUES (%s,%s,%s,'unused',%s,%s,%s)
         RETURNING id
         """,
         (
             ticket_id,
             restaurant_id,
-            data.get("title", "Volunteer Reward Coupon"),
-            data.get("description"),
-            vegetarian,
             data.get("discount_price", 0),
             barcode,
             data.get("start_time"),
@@ -111,7 +107,7 @@ def scan_ticket(qr_code):
 @tickets_bp.route("/tickets/scan/<qr_code>/use", methods=["POST"])
 def use_ticket_by_qr(qr_code):
     """Organization scans QR code to mark ticket as used and auto-create coupon."""
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     if not data.get("restaurant_id"):
         return jsonify({"error": "restaurant_id is required"}), 400
 
@@ -143,13 +139,7 @@ def use_ticket_by_qr(qr_code):
         "UPDATE public.tickets SET status = 'used', get_rewards = true WHERE id = %s",
         (ticket["id"],),
     )
-    coupon_id = _create_coupon(
-        cur2,
-        ticket["id"],
-        data["restaurant_id"],
-        ticket["vegetarian"],
-        data,
-    )
+    coupon_id = _create_coupon(cur2, ticket["id"], data["restaurant_id"], data)
     conn.commit()
     cur.close()
     cur2.close()
@@ -160,7 +150,7 @@ def use_ticket_by_qr(qr_code):
 @tickets_bp.route("/tickets/<int:ticket_id>/use", methods=["POST"])
 def use_ticket(ticket_id):
     """Mark ticket as used and auto-create a coupon."""
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     if not data.get("restaurant_id"):
         return jsonify({"error": "restaurant_id is required"}), 400
 
@@ -168,13 +158,7 @@ def use_ticket(ticket_id):
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
     cur.execute(
-        """
-        SELECT t.id, t.status, t.get_rewards, t.user_id,
-               u.vegetarian
-        FROM public.tickets t
-        JOIN public.users u ON u.id = t.user_id
-        WHERE t.id = %s
-        """,
+        "SELECT id, status, get_rewards FROM public.tickets WHERE id = %s",
         (ticket_id,),
     )
     ticket = cur.fetchone()
@@ -193,13 +177,7 @@ def use_ticket(ticket_id):
         "UPDATE public.tickets SET status = 'used', get_rewards = true WHERE id = %s",
         (ticket_id,),
     )
-    coupon_id = _create_coupon(
-        cur2,
-        ticket_id,
-        data["restaurant_id"],
-        ticket["vegetarian"],
-        data,
-    )
+    coupon_id = _create_coupon(cur2, ticket_id, data["restaurant_id"], data)
     conn.commit()
     cur.close()
     cur2.close()
