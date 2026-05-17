@@ -3,14 +3,15 @@ import type { EventCategory } from '../models/types/event.types'
 import type { OrgCategory } from '../models/types/organization.types'
 import { mockEvents, pastEvents } from '../data/events'
 import { mockOrganizations } from '../data/organizations'
+import { mockCoupons } from '../data/coupons'
 
 export type EventFilter = 'groups' | 'join' | 'saved' | 'past'
 
 const categoryStyles: Record<EventCategory, { color: string; bg: string }> = {
-  volunteer:  { color: '#a78bfa', bg: '#a78bfa18' },
-  community:  { color: '#34d399', bg: '#34d39918' },
-  workshop:   { color: '#2563eb', bg: '#2563eb12' },
-  fundraiser: { color: '#f59e0b', bg: '#f59e0b18' },
+  volunteer:  { color: '#a78bfa', bg: '#a78bfa22' },
+  community:  { color: '#34d399', bg: '#34d39922' },
+  workshop:   { color: '#2563eb', bg: '#2563eb18' },
+  fundraiser: { color: '#f59e0b', bg: '#f59e0b22' },
 }
 
 const orgAccentColors: Record<OrgCategory, string> = {
@@ -20,11 +21,12 @@ const orgAccentColors: Record<OrgCategory, string> = {
 }
 
 export function useHome() {
-  const activeFilter = ref<EventFilter>('join')
-  const joinedIds    = ref<Set<string>>(new Set())
-  const savedIds     = ref<Set<string>>(new Set())
+  const activeFilter  = ref<EventFilter>('join')
+  const joinedIds     = ref<Set<string>>(new Set())
+  const savedIds      = ref<Set<string>>(new Set())
 
-  const organizations = mockOrganizations
+  const organizations  = mockOrganizations
+  const earnedCoupons  = mockCoupons.filter(c => c.status === 'active' || c.status === 'expiring_soon')
 
   const visibleEvents = computed(() => {
     switch (activeFilter.value) {
@@ -36,9 +38,7 @@ export function useHome() {
     }
   })
 
-  function setFilter(filter: EventFilter) {
-    activeFilter.value = filter
-  }
+  function setFilter(filter: EventFilter) { activeFilter.value = filter }
 
   function toggleJoin(id: string) {
     const next = new Set(joinedIds.value)
@@ -52,13 +52,8 @@ export function useHome() {
     savedIds.value = next
   }
 
-  function isJoined(id: string) {
-    return joinedIds.value.has(id)
-  }
-
-  function isSaved(id: string) {
-    return savedIds.value.has(id)
-  }
+  function isJoined(id: string) { return joinedIds.value.has(id) }
+  function isSaved(id: string)  { return savedIds.value.has(id) }
 
   function badgeStyle(category: EventCategory) {
     return categoryStyles[category] ?? { color: '#6b6b72', bg: 'transparent' }
@@ -71,6 +66,7 @@ export function useHome() {
   return {
     activeFilter,
     organizations,
+    earnedCoupons,
     visibleEvents,
     setFilter,
     toggleJoin,

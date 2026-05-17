@@ -1,26 +1,18 @@
 <template>
   <div class="home-view">
-
-    <!-- accent bar -->
     <div class="accent-bar"></div>
-
-    <!-- PINNED TOP: header + orgs -->
     <div class="home-top">
-
       <div class="home-header">
         <div class="home-title">Home</div>
         <div class="avatar-btn" @click="goToProfile">
           <span class="avatar-initials">KL</span>
         </div>
       </div>
-
       <div class="top-divider"></div>
-
       <div class="section-header">
         <span class="section-title">Organizations</span>
         <span class="see-all">See all</span>
       </div>
-
       <div class="orgs-scroll">
         <OrgCard
           v-for="org in organizations"
@@ -29,16 +21,22 @@
           @select="onOrgSelect"
         />
       </div>
-
       <div class="top-divider"></div>
-
+      <div class="section-header">
+        <span class="section-title">Earned Rewards</span>
+        <span class="see-all">See all</span>
+      </div>
+      <div class="rewards-scroll">
+        <EarnedRewardCard
+          v-for="coupon in earnedCoupons"
+          :key="coupon.id"
+          :coupon="coupon"
+        />
+      </div>
+      <div class="top-divider"></div>
     </div>
-
-    <!-- SCROLLABLE: events -->
     <div class="home-content">
-
       <div class="events-title">Events</div>
-
       <div class="pill-row">
         <button
           v-for="pill in eventPills"
@@ -50,25 +48,14 @@
           {{ pill.label }}
         </button>
       </div>
-
-      <!-- empty states -->
-      <div
-        v-if="visibleEvents.length === 0 && activeFilter === 'saved'"
-        class="empty-state"
-      >
+      <div v-if="visibleEvents.length === 0 && activeFilter === 'saved'" class="empty-state">
         <IconBookmark :size="32" class="empty-icon" aria-hidden="true" />
         <p>No saved events yet</p>
       </div>
-
-      <div
-        v-else-if="visibleEvents.length === 0 && activeFilter === 'groups'"
-        class="empty-state"
-      >
+      <div v-else-if="visibleEvents.length === 0 && activeFilter === 'groups'" class="empty-state">
         <IconCalendarOff :size="32" class="empty-icon" aria-hidden="true" />
         <p>No events to show</p>
       </div>
-
-      <!-- event list -->
       <EventCard
         v-for="event in visibleEvents"
         :key="event.id"
@@ -76,10 +63,7 @@
         :is-joined="isJoined(event.id)"
         @join="toggleJoin"
       />
-
     </div>
-
-    <!-- BOTTOM NAV -->
     <nav class="bottom-nav" aria-label="Main navigation">
       <router-link to="/" class="nav-item">
         <IconHome :size="20" aria-hidden="true" />
@@ -94,7 +78,6 @@
         <span class="nav-label">Wallet</span>
       </router-link>
     </nav>
-
   </div>
 </template>
 
@@ -110,12 +93,14 @@ import {
 import { useHome } from '../../viewmodels/useHome'
 import EventCard from '../../components/events/EventCard.vue'
 import OrgCard from '../../components/org/OrgCard.vue'
+import EarnedRewardCard from '../../components/rewards/EarnedRewardCard.vue'
 
 const router = useRouter()
 
 const {
   activeFilter,
   organizations,
+  earnedCoupons,
   visibleEvents,
   setFilter,
   toggleJoin,
@@ -146,33 +131,28 @@ function onOrgSelect(id: string) {
   background: #f8f7f5;
   font-family: var(--font-main);
 }
-
 .accent-bar {
   height: 4px;
   background: linear-gradient(90deg, var(--ch-gold) 0%, var(--ch-blue-mid) 100%);
   flex-shrink: 0;
 }
-
 .home-top {
   flex-shrink: 0;
   background: #f8f7f5;
   padding: 0 20px;
 }
-
 .home-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px 0 14px;
 }
-
 .home-title {
   font-size: 20px;
   font-weight: 500;
   color: #1a1a1a;
   letter-spacing: -0.3px;
 }
-
 .avatar-btn {
   width: 36px;
   height: 36px;
@@ -185,39 +165,33 @@ function onOrgSelect(id: string) {
   cursor: pointer;
   flex-shrink: 0;
 }
-
 .avatar-initials {
   font-size: 13px;
   font-weight: 500;
   color: var(--ch-gold);
 }
-
 .top-divider {
   height: 0.5px;
   background: #e2e0d8;
   margin: 0 -20px;
 }
-
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px 0 12px;
 }
-
 .section-title {
   font-size: 14px;
   font-weight: 500;
   color: #1a1a1a;
 }
-
 .see-all {
   font-size: 13px;
   font-weight: 500;
   color: var(--ch-gold);
   cursor: pointer;
 }
-
 .orgs-scroll {
   display: flex;
   gap: 12px;
@@ -226,7 +200,14 @@ function onOrgSelect(id: string) {
   padding-bottom: 16px;
 }
 .orgs-scroll::-webkit-scrollbar { display: none; }
-
+.rewards-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 16px;
+}
+.rewards-scroll::-webkit-scrollbar { display: none; }
 .home-content {
   flex: 1;
   overflow-y: auto;
@@ -235,14 +216,12 @@ function onOrgSelect(id: string) {
 }
 .home-content::-webkit-scrollbar { width: 3px; }
 .home-content::-webkit-scrollbar-thumb { background: #e2e0d8; border-radius: 3px; }
-
 .events-title {
   font-size: 14px;
   font-weight: 500;
   color: #1a1a1a;
   padding: 16px 0 14px;
 }
-
 .pill-row {
   display: flex;
   gap: 8px;
@@ -251,7 +230,6 @@ function onOrgSelect(id: string) {
   scrollbar-width: none;
 }
 .pill-row::-webkit-scrollbar { display: none; }
-
 .pill {
   padding: 7px 16px;
   border-radius: var(--r-pill);
@@ -271,7 +249,6 @@ function onOrgSelect(id: string) {
   border-color: var(--ch-gold);
   font-weight: 500;
 }
-
 .empty-state {
   text-align: center;
   padding: 48px 20px;
@@ -284,7 +261,6 @@ function onOrgSelect(id: string) {
   opacity: 0.25;
   color: #6b6b72;
 }
-
 .bottom-nav {
   position: fixed;
   bottom: 0;
@@ -298,7 +274,6 @@ function onOrgSelect(id: string) {
   justify-content: space-around;
   z-index: 100;
 }
-
 .nav-item {
   display: flex;
   flex-direction: column;
@@ -309,10 +284,7 @@ function onOrgSelect(id: string) {
   color: #a0a0a8;
   transition: color 0.15s;
 }
-.nav-item.router-link-active {
-  color: var(--ch-gold);
-}
-
+.nav-item.router-link-active { color: var(--ch-gold); }
 .nav-label {
   font-size: 10px;
   font-weight: 500;
