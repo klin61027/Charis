@@ -5,12 +5,13 @@ import SignUpView from '../views/auth/SignUpView.vue'
 import OrgSignUpView from '../views/auth/OrgSignUpView.vue'
 import HomeView from '../views/home/HomeView.vue'
 import WalletView from '../views/wallet/WalletView.vue'
-import ProfileView from '../views/profile/ProfileView.vue'
-import SettingsView from '../views/settings/SettingsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+
+    // ─── Auth (no shell) ────────────────────────────────────────────────────
+
     {
       path: '/login',
       component: LoginView,
@@ -26,29 +27,52 @@ const router = createRouter({
       component: OrgSignUpView,
       meta: { layout: 'auth' },
     },
+
+    // ─── Volunteer / user shell ──────────────────────────────────────────────
+
     {
       path: '/',
       component: () => import('../components/layout/AppShell.vue'),
       meta: { requiresAuth: true, role: 'user' },
       children: [
-        { path: '',                component: HomeView     },
-        { path: 'wallet',          component: WalletView   },
-        { path: 'profile',         component: ProfileView  },
-        { path: 'settings',        component: SettingsView },
-        { path: 'explore', component: () => import('../views/explore/ExploreView.vue') },
-        { path: 'events/:id',      component: HomeView     },
-        { path: 'org/:id', component: () => import('../views/org/OrgDetailView.vue') },
-        { path: 'notifications',   component: HomeView     },
+        { path: '',       component: HomeView   },
+        { path: 'wallet', component: WalletView },
       ],
     },
+
+    // ─── Org shell ───────────────────────────────────────────────────────────
+
     {
       path: '/org',
-      component: () => import('../components/layout/AppShell.vue'),
+      component: () => import('../components/layout/OrgShell.vue'),
       meta: { requiresAuth: true, role: 'org' },
       children: [
-        { path: 'dashboard', component: HomeView },
+        {
+          path: 'dashboard',
+          component: () => import('../views/org/OrgDashboardView.vue'),
+        },
+        {
+          path: 'events',
+          component: () => import('../views/org/OrgEventsView.vue'),
+        },
+        {
+          path: 'approvals',
+          component: () => import('../views/org/OrgApprovalsView.vue'),
+        },
+        {
+          path: 'checkin/:eventId',
+          component: () => import('../views/org/OrgCheckinView.vue'),
+        },
+        // ─── Redirect /org → /org/dashboard ─────────────────────────────────
+        {
+          path: '',
+          redirect: '/org/dashboard',
+        },
       ],
     },
+
+    // ─── Catch-all ───────────────────────────────────────────────────────────
+
     {
       path: '/:pathMatch(.*)*',
       redirect: '/login',
@@ -59,8 +83,8 @@ const router = createRouter({
 router.beforeEach((to) => {
   const auth = useAuthStore()
   if (to.meta.requiresAuth && !auth.isAuthenticated) return '/login'
-  if (to.meta.role === 'user' && auth.isOrg) return '/org/dashboard'
-  if (to.meta.role === 'org' && auth.isUser) return '/'
+  if (to.meta.role === 'user' && auth.isOrg)  return '/org/dashboard'
+  if (to.meta.role === 'org'  && auth.isUser) return '/'
 })
 
 export default router
