@@ -365,7 +365,7 @@ function initials(name: string) {
 
 // ─── QR Scanner ───────────────────────────────────────────────────────────
 
-const API_BASE    = 'http://localhost:5000'
+const API_BASE    = 'http://127.0.0.1:5000'
 
 const showScanner = ref(false)
 const scanStatus  = ref('')
@@ -434,12 +434,13 @@ async function handleScannedCode(qrCode: string) {
   try {
     const res = await fetch(`${API_BASE}/tickets/scan/${qrCode}/use`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ restaurant_id: '6f0bb609-991e-46c8-9c16-f9f5673b0e9f' }),
     })
 
     const data = await res.json()
 
-    if (!res.ok) throw new Error(data.message ?? 'Check-in failed')
+    if (!res.ok) throw new Error(data.error ?? data.message ?? 'Check-in failed')
 
     scanStatus.value  = '✓ Checked in successfully!'
     scanSuccess.value = true
