@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth.store'
 import LoginView from '../views/auth/LoginView.vue'
+import SignUpView from '../views/auth/SignUpView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -12,7 +13,7 @@ const router = createRouter({
     },
     {
       path: '/signup',
-      component: LoginView,
+      component: SignUpView,
       meta: { layout: 'auth' },
     },
     {
