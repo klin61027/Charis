@@ -62,6 +62,7 @@
         :event="event"
         :is-joined="isJoined(event.id)"
         @join="toggleJoin"
+        @open-form="openForm"
       />
     </div>
     <nav class="bottom-nav" aria-label="Main navigation">
@@ -78,6 +79,24 @@
         <span class="nav-label">Wallet</span>
       </router-link>
     </nav>
+
+    <!-- join form sheet -->
+    <JoinFormSheet
+      :is-open="isOpen"
+      :is-submitted="isSubmitted"
+      :is-loading="isLoading"
+      :error="error"
+      :active-event="activeEvent"
+      :question1="question1"
+      :question2="question2"
+      :question3="question3"
+      :form="form"
+      @close="closeForm"
+      @submit="() => submitForm(toggleJoin)"
+      @update:question1="question1 = $event"
+      @update:question2="question2 = $event"
+      @update:question3="question3 = $event"
+    />
   </div>
 </template>
 
@@ -91,9 +110,12 @@ import {
   IconWallet,
 } from '@tabler/icons-vue'
 import { useHome } from '../../viewmodels/useHome'
+import { useJoinForm } from '../../viewmodels/useJoinForm'
 import EventCard from '../../components/events/EventCard.vue'
 import OrgCard from '../../components/org/OrgCard.vue'
 import EarnedRewardCard from '../../components/rewards/EarnedRewardCard.vue'
+import JoinFormSheet from '../../components/events/JoinFormSheet.vue'
+import type { Event } from '../../models/types/event.types'
 
 const router = useRouter()
 
@@ -106,6 +128,21 @@ const {
   toggleJoin,
   isJoined,
 } = useHome()
+
+const {
+  isOpen,
+  isSubmitted,
+  isLoading,
+  error,
+  activeEvent,
+  question1,
+  question2,
+  question3,
+  form,
+  openForm,
+  closeForm,
+  submitForm,
+} = useJoinForm()
 
 const eventPills = [
   { label: 'Your groups', value: 'groups' as const },
