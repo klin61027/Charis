@@ -76,7 +76,7 @@
           </button>
 
           <router-link
-            :to="isOrgRole ? '/signup?role=org' : '/signup'"
+            :to="isOrgRole ? '/signup/org' : '/signup'"
             class="btn-secondary"
           >
             {{ isOrgRole ? 'Register your organization' : 'Create volunteer account' }}

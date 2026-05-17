@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth.store'
 import LoginView from '../views/auth/LoginView.vue'
 import SignUpView from '../views/auth/SignUpView.vue'
+import OrgSignUpView from '../views/auth/OrgSignUpView.vue'
 import HomeView from '../views/home/HomeView.vue'
 
 const router = createRouter({
@@ -15,6 +16,11 @@ const router = createRouter({
     {
       path: '/signup',
       component: SignUpView,
+      meta: { layout: 'auth' },
+    },
+    {
+      path: '/signup/org',
+      component: OrgSignUpView,
       meta: { layout: 'auth' },
     },
     {
@@ -35,9 +41,7 @@ const router = createRouter({
       children: [
         {
           path: 'dashboard',
-          component: {
-            template: '<div style="padding:2rem;font-family:sans-serif;">Org dashboard — coming soon</div>',
-          },
+          component: HomeView,
         },
       ],
     },
