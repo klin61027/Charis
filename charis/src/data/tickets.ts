@@ -1,0 +1,48 @@
+import type { Ticket } from '../models/types/ticket.types'
+
+export const mockTickets: Ticket[] = [
+  {
+    id: 'tkt-1',
+    eventId: 'evt-1',
+    eventTitle: 'Food Bank Sorting Shift',
+    eventCategory: 'volunteer',
+    organizationName: 'Northwest Harvest',
+    date: 'Sat, Jun 7',
+    time: '9:00am',
+    location: 'SoDo, Seattle',
+    status: 'upcoming',
+  },
+  {
+    id: 'tkt-2',
+    eventId: 'evt-2',
+    eventTitle: 'Capitol Hill Block Clean-up',
+    eventCategory: 'community',
+    organizationName: 'Seattle Parks Foundation',
+    date: 'Sun, Jun 8',
+    time: '10:00am',
+    location: 'Capitol Hill, Seattle',
+    status: 'upcoming',
+  },
+  {
+    id: 'tkt-3',
+    eventId: 'evt-past-1',
+    eventTitle: 'Rainier Valley Food Drive',
+    eventCategory: 'volunteer',
+    organizationName: 'Northwest Harvest',
+    date: 'Sat, May 3',
+    time: '9:00am',
+    location: 'Rainier Valley, Seattle',
+    status: 'attended',
+  },
+  {
+    id: 'tkt-4',
+    eventId: 'evt-past-2',
+    eventTitle: 'Green Lake Park Restoration',
+    eventCategory: 'community',
+    organizationName: 'Seattle Parks Foundation',
+    date: 'Sat, Apr 19',
+    time: '8:00am',
+    location: 'Green Lake, Seattle',
+    status: 'attended',
+  },
+]
