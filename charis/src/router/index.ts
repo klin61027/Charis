@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth.store'
 import LoginView from '../views/auth/LoginView.vue'
 import SignUpView from '../views/auth/SignUpView.vue'
+import HomeView from '../views/home/HomeView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -23,9 +24,7 @@ const router = createRouter({
       children: [
         {
           path: '',
-          component: {
-            template: '<div style="padding:2rem;font-family:sans-serif;">Home — coming soon</div>',
-          },
+          component: HomeView,
         },
       ],
     },
