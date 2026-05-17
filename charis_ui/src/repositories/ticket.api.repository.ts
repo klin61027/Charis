@@ -1,4 +1,5 @@
 import type { Ticket, TicketStatus } from '../models/types/ticket.types'
+import type { Coupon, CouponStatus } from '../models/types/coupon.types'
 
 const BASE_URL = 'http://127.0.0.1:5000'
 
@@ -42,4 +43,45 @@ export async function getTicketsByUser(userId: string): Promise<Ticket[]> {
   if (!res.ok) return []
   const data = await res.json()
   return data.map(mapTicket)
+}
+
+function mapCoupon(c: any): Coupon {
+  const now     = new Date()
+  const endDate = c.end_time ? new Date(c.end_time) : null
+  const daysLeft = endDate
+    ? Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / 86_400_000))
+    : 0
+
+  let status: CouponStatus
+  if (c.status === 'used' || c.status === 'redeemed') {
+    status = 'redeemed'
+  } else if (c.status === 'expired' || (endDate && endDate < now)) {
+    status = 'expired'
+  } else if (daysLeft <= 3) {
+    status = 'expiring_soon'
+  } else {
+    status = 'active'
+  }
+
+  const value = c.discount_price > 0 ? `$${c.discount_price} off` : 'Free reward'
+
+  return {
+    id:                 String(c.id),
+    businessId:         c.restaurant_id,
+    businessName:       c.restaurant_name ?? 'Partner Restaurant',
+    businessCategory:   'restaurant',
+    neighborhood:       c.restaurant_city ?? '',
+    value,
+    status,
+    daysLeft,
+    earnedFromEventId:  String(c.event_id ?? ''),
+    barcode:            c.barcode ?? undefined,
+  }
+}
+
+export async function getCouponsByUser(userId: string): Promise<Coupon[]> {
+  const res = await fetch(`${BASE_URL}/users/${userId}/coupons`)
+  if (!res.ok) return []
+  const data = await res.json()
+  return data.map(mapCoupon)
 }

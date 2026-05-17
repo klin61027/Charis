@@ -19,6 +19,7 @@ export interface Coupon {
   status: CouponStatus
   daysLeft: number
   earnedFromEventId: string
+  barcode?: string
 }
 
 export interface EventReward {
