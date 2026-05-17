@@ -10,8 +10,6 @@ import type {
 
 const BASE_URL = 'http://127.0.0.1:5000'
 
-// ─── Mappers ──────────────────────────────────────────────────────────────────
-
 function deriveEventStatus(startTime: string, endTime: string): OrgEventStatus {
   const now   = new Date()
   const start = new Date(startTime + 'Z')
@@ -35,18 +33,18 @@ function formatTime(iso: string): string {
 
 function mapEvent(e: any): OrgEvent {
   return {
-    id:             e.id,
-    title:          e.title,
-    category:       'volunteer',
-    date:           formatDate(e.start_time),
-    time:           formatTime(e.start_time),
-    location:       `${e.address}, ${e.city}`,
-    status:         deriveEventStatus(e.start_time, e.end_time),
+    id:              e.id,
+    title:           e.title,
+    category:        'volunteer',
+    date:            formatDate(e.start_time),
+    time:            formatTime(e.start_time),
+    location:        `${e.address}, ${e.city}`,
+    status:          deriveEventStatus(e.start_time, e.end_time),
     registeredCount: e.volunteers_amount ?? 0,
-    capacityMax:    e.volunteers_amount > 0 ? e.volunteers_amount : 20,
-    checkedInCount: 0,
-    organizationId: e.organization_id,
-    rewardDealId:   null,
+    capacityMax:     e.volunteers_amount > 0 ? e.volunteers_amount : 20,
+    checkedInCount:  0,
+    organizationId:  e.organization_id,
+    rewardDealId:    null,
   }
 }
 
@@ -58,12 +56,12 @@ function mapDoc(doc: any, events: OrgEvent[]): OrgVolunteer {
   return {
     id:             String(doc.id),
     eventId:        doc.event_id,
-    eventTitle:     event?.title    ?? 'Unknown event',
-    eventStatus:    event?.status   ?? 'upcoming',
+    eventTitle:     event?.title  ?? 'Unknown event',
+    eventStatus:    event?.status ?? 'upcoming',
     eventCategory:  'volunteer',
-    eventDate:      event?.date     ?? '',
+    eventDate:      event?.date   ?? '',
     userId:         doc.users_id,
-    name:           doc.users_id,
+    name:           'Vol · ' + doc.users_id.slice(0, 6).toUpperCase(),
     username:       doc.users_id.slice(0, 8),
     approvalStatus,
     checkedIn:      false,
@@ -73,7 +71,12 @@ function mapDoc(doc: any, events: OrgEvent[]): OrgVolunteer {
   }
 }
 
-// ─── Repository ───────────────────────────────────────────────────────────────
+const putJson = (url: string) =>
+  fetch(url, {
+    method:  'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({}),
+  })
 
 export class OrgEventApiRepository implements IOrgEventRepository {
 
@@ -122,7 +125,7 @@ export class OrgEventApiRepository implements IOrgEventRepository {
     const endpoint = status === 'approved'
       ? `${BASE_URL}/approvedocs/${volunteerId}/approve`
       : `${BASE_URL}/approvedocs/${volunteerId}/deny`
-    await fetch(endpoint, { method: 'PUT' })
+    await putJson(endpoint)
     const docRes = await fetch(`${BASE_URL}/approvedocs/${volunteerId}`)
     const doc    = await docRes.json()
     return mapDoc(doc, [])
@@ -132,9 +135,7 @@ export class OrgEventApiRepository implements IOrgEventRepository {
     const vols    = await this.getVolunteersByEvent(eventId)
     const pending = vols.filter(v => v.approvalStatus === 'pending')
     await Promise.all(
-      pending.map(v =>
-        fetch(`${BASE_URL}/approvedocs/${v.id}/approve`, { method: 'PUT' })
-      )
+      pending.map(v => putJson(`${BASE_URL}/approvedocs/${v.id}/approve`))
     )
     return this.getVolunteersByEvent(eventId)
   }
@@ -149,9 +150,9 @@ export class OrgEventApiRepository implements IOrgEventRepository {
     )
     if (ticket) {
       await fetch(`${BASE_URL}/tickets/scan/${ticket.qr_code}/use`, {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body:    JSON.stringify({
           restaurant_id:  null,
           title:          'Volunteer Reward Coupon',
           discount_price: 0,

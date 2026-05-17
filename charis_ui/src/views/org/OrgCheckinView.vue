@@ -221,6 +221,32 @@
       </div>
     </div>
 
+    <!-- QR Scanner overlay -->
+    <Transition name="overlay">
+      <div v-if="showScanner" class="overlay" @click.self="closeScanner">
+        <div class="modal" style="width: 340px;">
+          <div class="modal-header">
+            <div class="modal-title">Scan QR code</div>
+            <div class="modal-sub">Point camera at volunteer's QR code</div>
+          </div>
+          <div style="padding: 14px; text-align: center;">
+            <video ref="videoRef" autoplay playsinline style="width: 100%; border-radius: 10px;" />
+            <canvas ref="canvasRef" style="display: none;" />
+            <div
+              v-if="scanStatus"
+              style="margin-top: 10px; font-size: 12px;"
+              :style="{ color: scanSuccess ? '#0d9e6e' : '#a0a0a8' }"
+            >
+              {{ scanStatus }}
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="modal-cancel" @click="closeScanner">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Check-in method overlay -->
     <Transition name="overlay">
       <div
@@ -256,7 +282,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, nextTick, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import {
   IconArrowLeft,
@@ -323,15 +349,11 @@ const dealBarStyle = computed(() => {
 
 // ─── Style helpers ────────────────────────────────────────────────────────
 
-const avatarColors     = ['#c9920e18', '#2563eb12', '#a78bfa22', '#34d39922']
-const avatarTextColors = ['#c9920e',   '#2563eb',   '#7c5cbf',   '#0d9e6e'  ]
-
 const checkedInBg   = '#34d39922'
 const checkedInText = '#0d9e6e'
 
 function avatarStyle(name: string, checkedIn: boolean) {
   if (checkedIn) return { background: checkedInBg, color: checkedInText }
-  const idx = name.charCodeAt(0) % avatarColors.length
   return { background: '#f0ede8', color: '#a0a0a8' }
 }
 
@@ -341,10 +363,108 @@ function initials(name: string) {
   return (parts[0][0] + parts[1][0]).toUpperCase()
 }
 
-function triggerScanQR() {
-  // TODO: open device camera for QR scan
-  console.warn('QR scan triggered')
+// ─── QR Scanner ───────────────────────────────────────────────────────────
+
+const API_BASE    = 'http://localhost:5000'
+
+const showScanner = ref(false)
+const scanStatus  = ref('')
+const scanSuccess = ref(false)
+const videoRef    = ref<HTMLVideoElement | null>(null)
+const canvasRef   = ref<HTMLCanvasElement | null>(null)
+let   stream: MediaStream | null = null
+let   animFrame: number | null   = null
+
+async function triggerScanQR() {
+  showScanner.value = true
+  scanStatus.value  = 'Starting camera...'
+  scanSuccess.value = false
+
+  try {
+    // load jsQR dynamically from CDN
+    const script = document.createElement('script')
+    script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js'
+    document.head.appendChild(script)
+    await new Promise(resolve => { script.onload = resolve })
+
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment' }
+    })
+
+    await nextTick()
+    if (!videoRef.value) return
+    videoRef.value.srcObject = stream
+    scanStatus.value = 'Scanning...'
+    scanLoop()
+
+  } catch (err) {
+    scanStatus.value  = 'Camera access denied or unavailable.'
+    scanSuccess.value = false
+  }
 }
+
+function scanLoop() {
+  const video  = videoRef.value
+  const canvas = canvasRef.value
+  if (!video || !canvas || !showScanner.value) return
+
+  if (video.readyState === video.HAVE_ENOUGH_DATA) {
+    canvas.width  = video.videoWidth
+    canvas.height = video.videoHeight
+    const ctx = canvas.getContext('2d')!
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    const jsQR = (window as any).jsQR
+    if (jsQR) {
+      const code = jsQR(imageData.data, imageData.width, imageData.height)
+      if (code) {
+        handleScannedCode(code.data)
+        return
+      }
+    }
+  }
+  animFrame = requestAnimationFrame(scanLoop)
+}
+
+async function handleScannedCode(qrCode: string) {
+  scanStatus.value  = 'QR detected! Checking in...'
+  scanSuccess.value = false
+  stopCamera()
+
+  try {
+    const res = await fetch(`${API_BASE}/tickets/scan/${qrCode}/use`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) throw new Error(data.message ?? 'Check-in failed')
+
+    scanStatus.value  = '✓ Checked in successfully!'
+    scanSuccess.value = true
+    setTimeout(() => closeScanner(), 1500)
+
+  } catch (err: any) {
+    scanStatus.value  = err.message ?? 'Check-in failed. Try again.'
+    scanSuccess.value = false
+  }
+}
+
+function stopCamera() {
+  if (animFrame) cancelAnimationFrame(animFrame)
+  if (stream) stream.getTracks().forEach(t => t.stop())
+  stream    = null
+  animFrame = null
+}
+
+function closeScanner() {
+  stopCamera()
+  showScanner.value = false
+  scanStatus.value  = ''
+}
+
+onUnmounted(() => stopCamera())
 </script>
 
 <style scoped>
