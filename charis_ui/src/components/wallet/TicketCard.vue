@@ -1,13 +1,17 @@
 <template>
-  <div class="ticket-card" :class="{ 'attended': ticket.status === 'attended' }">
+  <div
+    class="ticket-card"
+    :class="{ attended: ticket.status === 'attended' }"
+    @click="handleClick"
+  >
     <div class="ticket-bar" :style="barStyle"></div>
     <div class="ticket-body">
       <div class="ticket-header">
         <div class="event-icon" :style="iconBgStyle">
           <IconHeartHandshake v-if="ticket.eventCategory === 'volunteer'" :size="18" aria-hidden="true" />
-          <IconTrees v-else-if="ticket.eventCategory === 'community'" :size="18" aria-hidden="true" />
-          <IconCoin v-else-if="ticket.eventCategory === 'fundraiser'" :size="18" aria-hidden="true" />
-          <IconSchool v-else :size="18" aria-hidden="true" />
+          <IconTrees          v-else-if="ticket.eventCategory === 'community'"  :size="18" aria-hidden="true" />
+          <IconCoin           v-else-if="ticket.eventCategory === 'fundraiser'" :size="18" aria-hidden="true" />
+          <IconSchool         v-else :size="18" aria-hidden="true" />
         </div>
         <div class="event-info">
           <div class="event-title">{{ ticket.eventTitle }}</div>
@@ -15,7 +19,9 @@
         </div>
         <div class="status-badge" :style="statusBadgeStyle">{{ statusLabel }}</div>
       </div>
+
       <div class="ticket-divider"></div>
+
       <div class="ticket-meta">
         <IconCalendar :size="13" aria-hidden="true" />
         {{ ticket.date }} · {{ ticket.time }}
@@ -23,6 +29,11 @@
       <div class="ticket-meta">
         <IconMapPin :size="13" aria-hidden="true" />
         {{ ticket.location }}
+      </div>
+
+      <div v-if="ticket.status === 'upcoming'" class="qr-hint">
+        <IconQrcode :size="13" aria-hidden="true" />
+        Tap to show QR code
       </div>
     </div>
   </div>
@@ -37,12 +48,23 @@ import {
   IconSchool,
   IconCalendar,
   IconMapPin,
+  IconQrcode,
 } from '@tabler/icons-vue'
 import type { Ticket } from '../../models/types/ticket.types'
 
 const props = defineProps<{
   ticket: Ticket
 }>()
+
+const emit = defineEmits<{
+  (e: 'show-qr', ticket: Ticket): void
+}>()
+
+function handleClick() {
+  if (props.ticket.status === 'upcoming') {
+    emit('show-qr', props.ticket)
+  }
+}
 
 const categoryIconColors: Record<string, string> = {
   volunteer:  '#a78bfa',
@@ -82,8 +104,15 @@ const statusBadgeStyle = computed(() => {
   border-radius: var(--r-md);
   margin-bottom: 12px;
   overflow: hidden;
+  cursor: default;
+  transition: background 0.15s;
 }
 .ticket-card.attended { opacity: 0.65; }
+
+.ticket-card:not(.attended) {
+  cursor: pointer;
+}
+.ticket-card:not(.attended):hover { background: #f8f7f5; }
 
 .ticket-bar { height: 3px; }
 
@@ -141,5 +170,21 @@ const statusBadgeStyle = computed(() => {
   align-items: center;
   gap: 5px;
   margin-bottom: 4px;
+}
+
+.qr-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 10px;
+  padding: 7px;
+  background: #c9920e08;
+  border-radius: 8px;
+  border: 0.5px solid #c9920e22;
+  font-size: 11px;
+  color: #c9920e;
+  font-weight: 500;
+  font-family: var(--font-main);
 }
 </style>
